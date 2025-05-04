@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleDarkMode } from '../../store/themeSlice';
 
 const Home = () => {
   const [title, setTitle] = useState('');
@@ -21,6 +23,8 @@ const Home = () => {
   ]);
 
   const currentUser = 'Victor'; // Simulando usuário logado
+  const dispatch = useDispatch();
+  const darkMode = useSelector((state) => state.theme.darkMode);
 
   const handleCreate = () => {
     if (title && content) {
@@ -38,16 +42,23 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center px-4 sm:px-6 lg:px-8">
+    <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} min-h-screen flex justify-center px-4 sm:px-6 lg:px-8`}>
       <div className="w-full max-w-4xl">
         {/* Header */}
-        <header className="bg-[#7494ec] text-white p-4 text-xl font-semibold">
-          CodeLeap Network
+        <header className="bg-[#7494ec] text-white p-4 text-xl font-semibold flex justify-between items-center">
+          <span>CodeLeap Network</span>
+          <button
+            onClick={() => dispatch(toggleDarkMode())}
+            className="text-xl"
+            title="Toggle Dark Mode"
+          >
+            {darkMode ? '🌞' : '🌙'}
+          </button>
         </header>
 
-        <div className="bg-white rounded p-6 space-y-6 shadow">
+        <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded p-6 space-y-6 shadow`}>
           {/* Formulário */}
-          <div className="space-y-4 border border-gray-300 rounded-md p-4 shadow-sm">
+          <div className={`${darkMode ? 'border-gray-600' : 'border-gray-300'} space-y-4 border rounded-md p-4 shadow-sm`}>
             <h2 className="font-semibold text-lg mb-4">What's on your mind?</h2>
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
             <div>
@@ -89,7 +100,7 @@ const Home = () => {
         {/* Cards de Postagens */}
         <div className="space-y-4">
           {posts.map((post) => (
-            <div key={post.id} className="bg-white border rounded shadow">
+            <div key={post.id} className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded shadow`}>
               <div className="bg-[#7494ec] text-white px-4 py-2 flex justify-between items-center rounded-t">
                 <span className="font-semibold">{post.title} at CodeLeap Network!</span>
                 {post.author === currentUser && (
@@ -99,11 +110,11 @@ const Home = () => {
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 text-sm text-gray-600 flex justify-between">
+              <div className="px-4 py-2 text-sm flex justify-between">
                 <span>@{post.author}</span>
                 <span>{post.time}</span>
               </div>
-              <div className="px-4 pb-4 text-gray-800 text-sm whitespace-pre-wrap">
+              <div className="px-4 pb-4 text-sm whitespace-pre-wrap">
                 {post.content}
               </div>
             </div>
