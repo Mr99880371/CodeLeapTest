@@ -1,30 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { fetchPosts, createPost, updatePost, deletePost } from '../../store/postSlice';
 import { toggleDarkMode } from '../../store/themeSlice';
+import EditModal from '../../components/EditModal';
+import DeleteModal from '../../components/DeleteModal';
 
 const Home = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: 'My First Post',
-      content: 'Curabitur suscipit suscipit tellus...',
-      author: 'Victor',
-      time: '25 minutes ago',
-    },
-    {
-      id: 2,
-      title: 'My Second Post',
-      content: 'Duis lobortis massa imperdiet quam...',
-      author: 'Anna',
-      time: '10 minutes ago',
-    },
-  ]);
+  const [editingPost, setEditingPost] = useState(null);
+  const [deletingPostId, setDeletingPostId] = useState(null);
 
-  const currentUser = 'Victor'; // Simulando usuário logado
+  const currentUser = useSelector((state) => state.user.name);
+
   const dispatch = useDispatch();
+  const posts = useSelector((state) => state.posts.list);
   const darkMode = useSelector((state) => state.theme.darkMode);
+
+  useEffect(() => {
+    dispatch(fetchPosts());
+  }, [dispatch]);
 
   const handleCreate = () => {
     if (title && content) {
@@ -35,11 +30,23 @@ const Home = () => {
         author: currentUser,
         time: 'just now',
       };
-      setPosts([newPost, ...posts]);
+      dispatch(createPost(newPost));
       setTitle('');
       setContent('');
     }
   };
+  
+
+  const handleSaveEdit = (updatedPost) => {
+    dispatch(updatePost(updatedPost));
+    setEditingPost(null);
+  };
+  
+  const handleDelete = () => {
+    dispatch(deletePost(deletingPostId));
+    setDeletingPostId(null);
+  };
+  
 
   return (
     <div className={`${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} min-h-screen flex justify-center px-4 sm:px-6 lg:px-8`}>
@@ -65,7 +72,7 @@ const Home = () => {
               <label className="block text-sm font-medium mb-1">Title</label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                className={`w-full border rounded px-3 py-2 ${darkMode ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}
                 placeholder="Hello world"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -74,7 +81,7 @@ const Home = () => {
             <div>
               <label className="block text-sm font-medium mb-1">Content</label>
               <textarea
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                className={`w-full border rounded px-3 py-2 ${darkMode ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}
                 placeholder="Content here"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -105,8 +112,8 @@ const Home = () => {
                 <span className="font-semibold">{post.title} at CodeLeap Network!</span>
                 {post.author === currentUser && (
                   <div className="space-x-2 text-white text-lg">
-                    <button title="Edit">📝</button>
-                    <button title="Delete">🗑️</button>
+                    <button title="Edit" onClick={() => setEditingPost(post)}>📝</button>
+                    <button title="Delete" onClick={() => setDeletingPostId(post.id)}>🗑️</button>
                   </div>
                 )}
               </div>
@@ -122,8 +129,18 @@ const Home = () => {
         </div>
       </div>
       </div>
+      <EditModal
+        isOpen={!!editingPost}
+        onClose={() => setEditingPost(null)}
+        onSave={handleSaveEdit}
+        post={editingPost}
+      />
+      <DeleteModal
+        isOpen={!!deletingPostId}
+        onClose={() => setDeletingPostId(null)}
+        onDelete={handleDelete}
+      />
     </div>
-    
   );
 };
 
